@@ -11,28 +11,30 @@ KEYCODE_RETURN = 36
 KEYCODE_NUMPAD_ENTER = 76
 KEYCODE_BACKSPACE = 51
 
+# Windows Virtual-Key (VK) codes
+VK_SPACE = 32          # 0x20
+VK_RETURN = 13         # 0x0D
+VK_BACKSPACE = 8       # 0x08
+
 MODIFIER_KEYCODES = {
-    54,  # Right Command
-    55,  # Left Command
-    56,  # Left Shift
-    57,  # Caps Lock
-    58,  # Left Option
-    59,  # Left Control
-    60,  # Right Shift
-    61,  # Right Option
-    62,  # Right Control
-    63,  # Function (Fn)
+    # macOS
+    54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+    # Windows (Shift, Ctrl, Alt, Caps, Windows keys)
+    16, 17, 18, 20, 91, 92, 160, 161, 162, 163, 164, 165
 }
 
 ARROW_KEYCODES = {
-    123,  # Left
-    124,  # Right
-    125,  # Down
-    126,  # Up
+    # macOS
+    123, 124, 125, 126,
+    # Windows (Left=37, Up=38, Right=39, Down=40)
+    37, 38, 39, 40
 }
 
 FUNCTION_KEYCODES = {
-    122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111  # F1..F12
+    # macOS F1..F12
+    122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111,
+    # Windows F1..F12 (112..123)
+    112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123
 }
 
 class EventFilter:
@@ -53,11 +55,11 @@ class EventFilter:
 
     def classify_keycode(self, keycode: int) -> KeyCategory:
         """Translates virtual keycode into semantic Category."""
-        if keycode == KEYCODE_SPACE:
+        if keycode in (KEYCODE_SPACE, VK_SPACE):
             return KeyCategory.SPACE
-        if keycode in (KEYCODE_RETURN, KEYCODE_NUMPAD_ENTER):
+        if keycode in (KEYCODE_RETURN, KEYCODE_NUMPAD_ENTER, VK_RETURN):
             return KeyCategory.ENTER
-        if keycode == KEYCODE_BACKSPACE:
+        if keycode in (KEYCODE_BACKSPACE, VK_BACKSPACE):
             return KeyCategory.BACKSPACE
         if keycode in MODIFIER_KEYCODES:
             return KeyCategory.MODIFIER

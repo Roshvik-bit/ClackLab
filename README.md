@@ -20,6 +20,15 @@ Because productivity is important. But sounding like a tiny mechanical orchestra
 
 ---
 
+## 📥 Downloads & Releases
+
+| Platform | Format | Release Version | Direct Link |
+| :--- | :--- | :--- | :--- |
+| 🍎 **macOS** (Apple Silicon & Intel) | Disk Image (`.dmg`) | [`v1.0.0-macos`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-macos) | [**Download ClackLab for macOS (.dmg)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-macos/ClackLab-v1.0.0-macOS.dmg) |
+| 🪟 **Windows** (10 / 11 64-bit) | Executable (`.exe`) | [`v1.0.0-windows`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-windows) | [**Download ClackLab for Windows (.exe)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-windows/ClackLab-v1.0.0-Windows.exe) |
+
+---
+
 ## 🛠️ Highlights & Core Features
 
 - **Ultra-Low Latency Audio Pipeline**: Preinitialized continuous PortAudio output stream running at 48,000 Hz with a 128-frame buffer (2.67 ms hardware buffer period).
