@@ -8,8 +8,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
-if [ ! -d "dist/ClackLab.app" ]; then
-    echo "dist/ClackLab.app not found. Running ./scripts/build_app.sh first..."
+if [ -d ".venv" ]; then
+    source .venv/bin/activate 2>/dev/null || true
+    export PATH="$PROJECT_ROOT/.venv/bin:$PATH"
+fi
+
+REBUILD=false
+if [ ! -d "dist/ClackLab.app" ] || [ "$1" == "--rebuild" ] || [ "$1" == "-r" ]; then
+    REBUILD=true
+fi
+
+if [ "$REBUILD" = true ]; then
+    echo "Running ./scripts/build_app.sh..."
     ./scripts/build_app.sh
 fi
 
@@ -27,6 +37,8 @@ mkdir -p "${STAGING_DIR}"
 
 cp -R "dist/ClackLab.app" "${STAGING_DIR}/"
 ln -s /Applications "${STAGING_DIR}/Applications"
+
+xattr -cr "${STAGING_DIR}/ClackLab.app" 2>/dev/null || true
 
 hdiutil create \
     -volname "ClackLab" \

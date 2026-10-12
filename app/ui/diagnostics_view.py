@@ -134,7 +134,70 @@ class DiagnosticsView(QWidget):
         bg_layout.addLayout(btn_row)
 
         layout.addWidget(bench_group)
+
+        # 3. Lifecycle Diagnostics Logs Section
+        log_group = QGroupBox("Lifecycle & Operational Logs", self)
+        lg_layout = QVBoxLayout(log_group)
+        lg_layout.setSpacing(8)
+
+        from PySide6.QtWidgets import QTextEdit, QFileDialog
+        from ..system.diagnostics_logger import DiagnosticsLogger
+
+        self.log_text = QTextEdit(log_group)
+        self.log_text.setReadOnly(True)
+        self.log_text.setFixedHeight(140)
+        self.log_text.setStyleSheet("""
+            QTextEdit {
+                background-color: #121318;
+                color: #a5b4fc;
+                font-family: Menlo, Monaco, monospace;
+                font-size: 11px;
+                border: 1px solid #282c38;
+                border-radius: 6px;
+                padding: 6px;
+            }
+        """)
+        lg_layout.addWidget(self.log_text)
+
+        log_btn_row = QHBoxLayout()
+        self.refresh_logs_btn = QPushButton("🔄 Refresh Logs", log_group)
+        self.refresh_logs_btn.clicked.connect(self._refresh_logs)
+        log_btn_row.addWidget(self.refresh_logs_btn)
+
+        self.export_logs_btn = QPushButton("📥 Export Logs...", log_group)
+        self.export_logs_btn.clicked.connect(self._export_logs)
+        log_btn_row.addWidget(self.export_logs_btn)
+
+        self.clear_logs_btn = QPushButton("🧹 Clear Logs", log_group)
+        self.clear_logs_btn.clicked.connect(self._clear_logs)
+        log_btn_row.addWidget(self.clear_logs_btn)
+
+        log_btn_row.addStretch()
+        lg_layout.addLayout(log_btn_row)
+
+        layout.addWidget(log_group)
+        self._refresh_logs()
+
         layout.addStretch()
+
+    def _refresh_logs(self):
+        from ..system.diagnostics_logger import DiagnosticsLogger
+        self.log_text.setPlainText(DiagnosticsLogger.get_recent_logs())
+        # Scroll to bottom
+        sb = self.log_text.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _export_logs(self):
+        from PySide6.QtWidgets import QFileDialog
+        from ..system.diagnostics_logger import DiagnosticsLogger
+        path, _ = QFileDialog.getSaveFileName(self, "Export Diagnostics Log", "clacklab_diagnostics.log", "Log Files (*.log)")
+        if path:
+            DiagnosticsLogger.export_logs(path)
+
+    def _clear_logs(self):
+        from ..system.diagnostics_logger import DiagnosticsLogger
+        DiagnosticsLogger.clear_logs()
+        self._refresh_logs()
 
     def refresh_telemetry(self):
         stats = self.latency_tracker.get_stats()

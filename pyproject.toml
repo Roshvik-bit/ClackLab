@@ -16,6 +16,7 @@ dependencies = [
     "soundfile>=0.12.0",
     "numpy>=1.24.0",
     "pyobjc-framework-Quartz>=9.0",
+    "pyobjc-framework-ServiceManagement>=9.0",
 ]
 
 [project.optional-dependencies]
@@ -30,3 +31,6 @@ clacklab = "main:main"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

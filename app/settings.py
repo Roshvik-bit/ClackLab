@@ -35,6 +35,10 @@ class AppSettings:
     sample_rate: int = 48000
     excluded_keys: List[int] = field(default_factory=list)
     custom_soundpack_dirs: List[str] = field(default_factory=list)
+    run_in_background: bool = True
+    show_in_dock: bool = False
+    cmd_q_behavior: str = "close_to_tray"  # "close_to_tray", "quit_completely", "ask"
+    accessibility_prompted: bool = False
 
 class SettingsManager:
     """Manages loading, saving, and validating application settings."""

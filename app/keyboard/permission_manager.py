@@ -51,14 +51,25 @@ class PermissionManager:
 
         return False
 
-    @staticmethod
-    def request_accessibility_prompt() -> bool:
+    _has_prompted = False
+
+    @classmethod
+    def request_accessibility_prompt(cls, force: bool = False) -> bool:
         """
         Triggers the native macOS system dialog prompting the user to grant Accessibility
         and registers the application in System Settings > Privacy & Security > Accessibility.
+        Avoids spamming prompts on every restart unless forced or requested.
         """
         if sys.platform != "darwin":
             return True
+
+        if cls.is_accessibility_granted():
+            return True
+
+        if cls._has_prompted and not force:
+            return False
+
+        cls._has_prompted = True
 
         try:
             app_services = ctypes.cdll.LoadLibrary(

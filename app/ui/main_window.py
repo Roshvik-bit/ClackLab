@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QTabWidget, QWidget, QVBoxLayout, QStatusBar, QLabel
 )
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QKeySequence, QShortcut
 
 from .styles import DARK_THEME_QSS, LIGHT_THEME_QSS
 from .dashboard import DashboardView
@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.setCentralWidget(self.tabs)
+        self.close_shortcut = QShortcut(QKeySequence.Close, self, activated=self.close)
 
         # 1. Dashboard
         self.dashboard_view = DashboardView(self)
@@ -149,12 +150,33 @@ class MainWindow(QMainWindow):
             self.local_key_event.emit(ev)
             self.dashboard_view.keyboard_view.trigger_key(keycode, False)
         super().keyReleaseEvent(event)
+
     def show_and_activate(self):
         """Brings the window to the foreground and unminimizes if hidden."""
         self.show()
         self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
         self.raise_()
         self.activateWindow()
+        try:
+            from AppKit import NSApplication
+            NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
+        except Exception:
+            pass
+
+    def open_tab(self, index: int):
+        """Switches to the requested tab and brings window to front."""
+        if 0 <= index < self.tabs.count():
+            self.tabs.setCurrentIndex(index)
+        self.show_and_activate()
+
+    def open_settings(self):
+        self.open_tab(2)
+
+    def open_diagnostics(self):
+        self.open_tab(6)
+
+    def open_permissions(self):
+        self.open_tab(5)
 
     def closeEvent(self, event):
         """Hides to taskbar / system tray on close instead of exiting, so typing sounds continue."""
