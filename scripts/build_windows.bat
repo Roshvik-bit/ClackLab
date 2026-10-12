@@ -21,6 +21,7 @@ pyinstaller ^
     --clean ^
     --noconfirm ^
     --icon "assets\icon.ico" ^
+    --version-file "scripts\windows_version_info.txt" ^
     --add-data "assets;assets" ^
     --hidden-import "sounddevice" ^
     --hidden-import "soundfile" ^
@@ -30,10 +31,13 @@ pyinstaller ^
     --hidden-import "PySide6.QtWidgets" ^
     main.py
 
-echo [3/3] Verifying output...
+echo [3/3] Creating Windows ZIP bundle...
 if exist "dist\ClackLab-v1.0.0-Windows.exe" (
+    powershell -Command "Compress-Archive -Path 'dist\ClackLab-v1.0.0-Windows.exe' -DestinationPath 'dist\ClackLab-v1.0.0-Windows.zip' -Force"
     echo ============================================================
-    echo Windows build successful: dist\ClackLab-v1.0.0-Windows.exe
+    echo Windows build successful:
+    echo   dist\ClackLab-v1.0.0-Windows.exe
+    echo   dist\ClackLab-v1.0.0-Windows.zip
     echo ============================================================
 ) else (
     echo Build failed. Check pyinstaller output above.

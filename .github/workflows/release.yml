@@ -95,12 +95,23 @@ jobs:
           name: ClackLab v1.0.0 for Windows
           draft: false
           prerelease: false
-          files: dist/ClackLab-v1.0.0-Windows.exe
+          files: |
+            dist/ClackLab-v1.0.0-Windows.exe
+            dist/ClackLab-v1.0.0-Windows.zip
           body: |
             ## ⌨️ ClackLab for Windows (v1.0.0)
 
             Download the standalone Windows executable for Windows 10 & Windows 11 (64-bit).
 
-            ### Installation:
-            1. Download `ClackLab-v1.0.0-Windows.exe`.
-            2. Double-click to run. No installer or administrative privileges required!
+            ### 📥 Installation & Running:
+            1. Download `ClackLab-v1.0.0-Windows.exe` (or `ClackLab-v1.0.0-Windows.zip`).
+            2. Double-click to run. No administrative privileges required!
+
+            ### 💡 Microsoft Defender SmartScreen Note:
+            Because ClackLab is a newly published open-source project without a commercial EV certificate, Windows Defender SmartScreen may display:
+            > *"Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognized app from starting."*
+
+            **How to bypass in 2 seconds:**
+            1. Click **"More info"** on the blue/purple SmartScreen banner.
+            2. Click the **"Run anyway"** button that appears.
+            *(Or right-click the file > **Properties** > check **"Unblock"** at the bottom > click **OK**).*

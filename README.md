@@ -25,7 +25,7 @@ Because productivity is important. But sounding like a tiny mechanical orchestra
 | Platform | Format | Release Version | Direct Link |
 | :--- | :--- | :--- | :--- |
 | 🍎 **macOS** (Apple Silicon & Intel) | Disk Image (`.dmg`) | [`v1.0.0-macos`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-macos) | [**Download ClackLab for macOS (.dmg)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-macos/ClackLab-v1.0.0-macOS.dmg) |
-| 🪟 **Windows** (10 / 11 64-bit) | Executable (`.exe`) | [`v1.0.0-windows`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-windows) | [**Download ClackLab for Windows (.exe)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-windows/ClackLab-v1.0.0-Windows.exe) |
+| 🪟 **Windows** (10 / 11 64-bit) | Executable (`.exe` / `.zip`) | [`v1.0.0-windows`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-windows) | [**Download Windows (.exe)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-windows/ClackLab-v1.0.0-Windows.exe) / [**Download Windows (.zip)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-windows/ClackLab-v1.0.0-Windows.zip) |
 
 > **💡 macOS Gatekeeper Tip**: When downloading open-source applications via Chrome or Safari on macOS (Sequoia / Sonoma), Gatekeeper may show *"ClackLab is damaged and can't be opened"*. This is simply macOS's browser quarantine flag.
 > 
@@ -36,6 +36,13 @@ Because productivity is important. But sounding like a tiny mechanical orchestra
 >    xattr -cr /Applications/ClackLab.app
 >    ```
 >    *(Or open **System Settings > Privacy & Security**, scroll down to **Security**, and click **Open Anyway**).*
+
+> **💡 Windows SmartScreen Tip**: When opening the `.exe` for the first time, Windows Defender SmartScreen may display *"Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognized app from starting"*.
+> 
+> **How to open:**
+> 1. Click **"More info"** on the purple/blue banner.
+> 2. Click the **"Run anyway"** button that appears.
+> *(Or right-click the `.exe` file > **Properties** > check the **"Unblock"** box at the bottom > click **OK**).*
 
 ---
 
