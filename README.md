@@ -1,12 +1,26 @@
-# ClackLab: Ultra-Low-Latency Virtual Mechanical Keyboard for macOS
+# ⌨️ ClackLab
 
-> High-performance, sample-based mechanical keyboard acoustics for macOS built from scratch in Python, PySide6, and PortAudio.
+**Your keyboard types. ClackLab gives it a personality.**
 
-ClackLab plays realistic mechanical keyboard acoustics as you type across any macOS application with sub-millisecond software scheduling latency.
+Ever typed an entire essay in silence and felt like something was missing? We did too.
+
+ClackLab is a macOS application designed to bring the satisfying sounds of mechanical keyboards to your everyday typing experience. Whether you're a fan of crisp clicks, deep thocks, or smooth, subtle taps, ClackLab aims to make every keystroke sound a little more satisfying.
+
+### ✨ What's the clack about?
+
+- 🔊 **Mechanical sound profiles** — Find the sound that matches your typing vibe.
+- ⚡ **Low-latency playback** — Keep the sounds snappy without turning your typing into a percussion concert.
+- 🎛️ **Customizable experience** — Tune your keyboard's personality to your liking.
+- 🍎 **Made for macOS** — Designed to fit into your Mac workflow.
+- 🔒 **Privacy-minded design** — Keyboard sounds, not keyboard surveillance. Your typed content shouldn't need to leave your machine.
+
+**The mission:** Make typing more enjoyable, one *clack* at a time.
+
+Because productivity is important. But sounding like a tiny mechanical orchestra? Also important.
 
 ---
 
-## Highlights
+## 🛠️ Highlights & Core Features
 
 - **Ultra-Low Latency Audio Pipeline**: Preinitialized continuous PortAudio output stream running at 48,000 Hz with a 128-frame buffer (2.67 ms hardware buffer period).
 - **In-Memory Preloaded Samples**: Audio waveforms are pre-resampled into contiguous 32-bit float stereo arrays in RAM. Zero disk reads, zero decoding, and zero network calls during typing.
@@ -37,7 +51,7 @@ ClackLab plays realistic mechanical keyboard acoustics as you type across any ma
 
 ---
 
-## Project Architecture
+## 📂 Project Architecture
 
 ```
 ClackLab/
@@ -72,6 +86,9 @@ ClackLab/
 │   │   ├── pack_validator.py   # Audio header & schema validator
 │   │   └── pack_manager.py     # Pack folder & ZIP archive importer
 │   │
+│   ├── system/
+│   │   └── login_item.py       # macOS Launch at Login via LaunchAgents
+│   │
 │   └── ui/
 │       ├── styles.py           # Premium dark & light mechanical keyboard QSS
 │       ├── main_window.py      # QMainWindow with multi-tab layout & local preview
@@ -86,7 +103,9 @@ ClackLab/
 │       └── diagnostics_view.py # Live latency telemetry & typing benchmark
 │
 ├── assets/
-│   ├── icon_keyboard.png       # High-res mechanical keyboard app & menu icon
+│   ├── icon.icns               # macOS Application Icon Bundle
+│   ├── icon_keyboard.png       # Menu bar keyboard symbol
+│   ├── logo.png                # Modern mechanical keycap logo
 │   └── sounds/                 # 48kHz WAV audio profiles (Linear, Tactile, Clicky, Silent, Thocky, Creamy)
 │       ├── manifest.json
 │       ├── linear/
@@ -96,15 +115,18 @@ ClackLab/
 │       ├── thocky/
 │       └── creamy/
 │
-├── tests/                      # Automated pytest suite (29 tests)
+├── tests/                      # Automated pytest suite (44 tests)
 │   ├── test_audio_mixer.py
 │   ├── test_event_filter.py
+│   ├── test_interactive_keys.py
 │   ├── test_latency_metrics.py
+│   ├── test_login_item.py
 │   ├── test_pack_validation.py
 │   ├── test_profiles.py
 │   ├── test_sample_library.py
 │   ├── test_settings.py
-│   └── test_tray_icon.py
+│   ├── test_tray_icon.py
+│   └── test_virtual_typing.py
 │
 └── scripts/
     ├── run_dev.sh              # One-command development runner
@@ -114,7 +136,7 @@ ClackLab/
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - macOS 12 Monterey, macOS 13 Ventura, macOS 14 Sonoma, macOS 15 Sequoia, or newer.
@@ -140,11 +162,11 @@ To listen to keystrokes while typing in other apps:
 2. Enable your Terminal (or `ClackLab.app`).
 3. Return to ClackLab and click **Verify Permission Now** in the **Permissions & Privacy** tab.
 
-*Note: ClackLab includes a **Local Typing Preview Mode**. When the ClackLab window has focus, you can type on your keyboard to test switches immediately without granting background system permissions.*
+*Note: ClackLab includes a **Local Typing Preview Mode**. When the ClackLab window has focus, you can type in the Live Typing Playground or click virtual keycaps to test switches immediately without granting background system permissions.*
 
 ---
 
-## Latency Benchmark & Diagnostics
+## ⚡ Latency Benchmark & Diagnostics
 
 ClackLab includes a headless command-line benchmarking mode that stress-tests the PortAudio engine and measures real scheduling latency:
 
@@ -177,9 +199,9 @@ BENCHMARK RESULTS:
 
 ---
 
-## Running the Automated Test Suite
+## 🧪 Running the Automated Test Suite
 
-Run all 25 unit and integration tests with `pytest`:
+Run all 44 unit and integration tests with `pytest`:
 ```bash
 pytest -v
 ```
@@ -192,10 +214,13 @@ Tests cover:
 - Switch profile discovery & manifest completeness
 - Preloaded sample caching & anti-repetition selection
 - Persistent settings JSON serialization & corruption recovery
+- Launch at Login LaunchAgent creation and removal
+- Menu bar status item actions and toggles
+- Interactive virtual typing and playground input handling
 
 ---
 
-## Building a Standalone macOS App Bundle (.app)
+## 📦 Building a Standalone macOS App Bundle (.app)
 
 To package ClackLab into a distributable `ClackLab.app` bundle:
 ```bash
@@ -205,7 +230,7 @@ The resulting application is placed in `dist/ClackLab.app`.
 
 ---
 
-## Privacy Policy & Safety Guarantee
+## 🔒 Privacy Policy & Safety Guarantee
 
 - **Zero Logging**: ClackLab does not store, transmit, or analyze text typed by the user. Keystroke events are discarded immediately after selecting an acoustic sample.
 - **Listen-Only Tap**: The keyboard monitor operates strictly in `kCGEventTapOptionListenOnly` mode. It is physically incapable of suppressing, modifying, or delaying keyboard input.
@@ -214,5 +239,5 @@ The resulting application is placed in `dist/ClackLab.app`.
 
 ---
 
-## License
+## 📄 License
 MIT License. See [LICENSES.md](LICENSES.md) for full application and audio sample attributions.
