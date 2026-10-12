@@ -6,6 +6,16 @@ from enum import Enum
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 
+class RuntimeState(Enum):
+    NOT_STARTED = "not_started"
+    STARTING = "starting"
+    RUNNING = "running"
+    DEGRADED = "degraded"
+    PAUSED = "paused"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
+    FAILED = "failed"
+
 class EventType(Enum):
     KEY_DOWN = "key_down"
     KEY_UP = "key_up"

@@ -1,5 +1,6 @@
 """
 macOS Menu Bar / Taskbar Keyboard Status Icon and Quick Access Dashboard Menu.
+Reflects live background runtime health, accessibility authorization, and lifecycle controls.
 """
 
 import os
@@ -9,9 +10,11 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon, QMenu, QWidget
 )
 from PySide6.QtGui import (
-    QIcon, QPixmap, QPainter, QColor, QPen, QBrush, QAction, QActionGroup
+    QIcon, QPixmap, QPainter, QColor, QPen, QBrush, QAction, QActionGroup, QFont
 )
 from PySide6.QtCore import Qt, QRectF, Signal, QObject
+
+from ..models import RuntimeState
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +26,10 @@ def get_app_icon() -> QIcon:
         return QIcon(logo_path)
     return generate_keyboard_icon()
 
-def generate_keyboard_icon(size: int = 40) -> QIcon:
+def generate_keyboard_icon(state: RuntimeState = RuntimeState.RUNNING, size: int = 40) -> QIcon:
     """
-    Renders a crisp, high-resolution mechanical keyboard template icon for the macOS menu bar.
-    Sets isMask=True so macOS automatically tints it for dark/light menu bars.
+    Renders a crisp, high-resolution mechanical keyboard icon for the macOS menu bar.
+    Dynamically decorates badges for RUNNING, PAUSED, DEGRADED, and STOPPED states.
     """
     pixmap = QPixmap(size, size)
     pixmap.fill(Qt.transparent)
@@ -34,47 +37,75 @@ def generate_keyboard_icon(size: int = 40) -> QIcon:
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.Antialiasing)
 
+    is_dimmed = (state in (RuntimeState.STOPPED, RuntimeState.FAILED, RuntimeState.NOT_STARTED))
+    stroke_color = QColor(120, 120, 120) if is_dimmed else QColor(0, 0, 0)
+
     # Keyboard body frame
-    pen = QPen(QColor(0, 0, 0), 2.5)
+    pen = QPen(stroke_color, 2.5)
     pen.setJoinStyle(Qt.RoundJoin)
     painter.setPen(pen)
     painter.drawRoundedRect(QRectF(4, 9, 32, 22), 5, 5)
 
-    # Keycaps (Row 1)
-    painter.setBrush(QBrush(QColor(0, 0, 0)))
+    # Keycaps
+    painter.setBrush(QBrush(stroke_color))
     painter.setPen(Qt.NoPen)
     for x in [8, 14, 20, 26]:
         painter.drawRoundedRect(QRectF(x, 13, 3.5, 3), 1, 1)
-
-    # Keycaps (Row 2)
     for x in [8, 14, 20, 26]:
         painter.drawRoundedRect(QRectF(x, 18, 3.5, 3), 1, 1)
-
-    # Spacebar (Bottom Row)
+    # Spacebar
     painter.drawRoundedRect(QRectF(11, 23, 16, 3), 1, 1)
+
+    # State badges
+    if state == RuntimeState.PAUSED:
+        # Pause badge bars (bottom-right)
+        painter.setBrush(QBrush(QColor(234, 88, 12)))
+        painter.drawRoundedRect(QRectF(25, 20, 3, 9), 1, 1)
+        painter.drawRoundedRect(QRectF(30, 20, 3, 9), 1, 1)
+    elif state == RuntimeState.DEGRADED:
+        # Warning badge circle with '!'
+        painter.setBrush(QBrush(QColor(217, 119, 6)))
+        painter.drawEllipse(QRectF(24, 18, 13, 13))
+        painter.setPen(QPen(QColor(255, 255, 255), 1.5))
+        painter.drawLine(30, 21, 30, 26)
+        painter.drawPoint(30, 28)
+    elif state in (RuntimeState.STOPPED, RuntimeState.FAILED):
+        # Slash across bottom right
+        painter.setPen(QPen(QColor(239, 68, 68), 2.5))
+        painter.drawLine(24, 28, 35, 19)
+
     painter.end()
 
     icon = QIcon(pixmap)
-    icon.setIsMask(True)
+    if state == RuntimeState.RUNNING:
+        icon.setIsMask(True)
     return icon
+
 
 class TrayIconManager(QObject):
     """
-    Manages the macOS taskbar / menu bar keyboard icon and quick access menu.
-    Allows instant access to all Dashboard controls from anywhere in macOS.
+    Manages the macOS menu bar status item and quick-access dashboard menu.
+    Allows inspection, control, and background persistence from anywhere in macOS.
     """
 
-    master_toggled = Signal(bool)
+    show_dashboard_requested = Signal()
+    open_settings_requested = Signal()
+    open_diagnostics_requested = Signal()
+    open_permissions_requested = Signal()
+    pause_resume_toggled = Signal(bool)  # True = resume, False = pause
+    stop_runtime_requested = Signal()
+    start_runtime_requested = Signal()
     profile_selected = Signal(str)
     volume_changed = Signal(float)
     preview_clicked = Signal()
-    show_dashboard_requested = Signal()
     launch_at_login_toggled = Signal(bool)
+    dock_icon_toggled = Signal(bool)
     quit_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.icon = generate_keyboard_icon()
+        self.current_state = RuntimeState.RUNNING
+        self.icon = generate_keyboard_icon(RuntimeState.RUNNING)
         self.tray_icon = QSystemTrayIcon(self.icon, parent)
         self.tray_icon.setToolTip("ClackLab — Virtual Mechanical Keyboard")
 
@@ -94,35 +125,48 @@ class TrayIconManager(QObject):
     def _build_menu(self):
         self.menu.clear()
 
-        # 1. Title / Header
-        self.title_action = QAction("⌨ ClackLab Dashboard", self.menu)
+        # 1. Header / Runtime Status Action
+        self.title_action = QAction("⌨ ClackLab", self.menu)
         font = self.title_action.font()
         font.setBold(True)
         self.title_action.setFont(font)
         self.title_action.setEnabled(False)
         self.menu.addAction(self.title_action)
 
-        # Status text action
-        self.status_action = QAction("● Audio: Active | Accessibility: Trusted", self.menu)
+        self.status_action = QAction("● Runtime: Running (Active)", self.menu)
         self.status_action.setEnabled(False)
         self.menu.addAction(self.status_action)
 
-        self.menu.addSeparator()
-
-        # 2. Master Enable / Disable Toggle
-        self.enable_action = QAction("Enabled (Typing Sounds Active)", self.menu)
-        self.enable_action.setCheckable(True)
-        self.enable_action.setChecked(True)
-        self.enable_action.toggled.connect(self.master_toggled.emit)
-        self.menu.addAction(self.enable_action)
+        # Warning action for missing permissions
+        self.perm_warning_action = QAction("⚠️ macOS Accessibility Permission Required...", self.menu)
+        self.perm_warning_action.setVisible(False)
+        self.perm_warning_action.triggered.connect(self.open_permissions_requested.emit)
+        self.menu.addAction(self.perm_warning_action)
 
         self.menu.addSeparator()
 
-        # 3. Active Profile Submenu
+        # 2. Open ClackLab Window
+        self.open_action = QAction("Open ClackLab Window...", self.menu)
+        open_font = self.open_action.font()
+        open_font.setBold(True)
+        self.open_action.setFont(open_font)
+        self.open_action.triggered.connect(self.show_dashboard_requested.emit)
+        self.menu.addAction(self.open_action)
+
+        self.menu.addSeparator()
+
+        # 3. Pause / Resume Sounds
+        self.pause_resume_action = QAction("Pause Background Sounds (Enabled)", self.menu)
+        self.pause_resume_action.setCheckable(True)
+        self.pause_resume_action.setChecked(True)
+        self.pause_resume_action.triggered.connect(self._on_pause_resume_clicked)
+        self.enable_action = self.pause_resume_action
+        self.menu.addAction(self.pause_resume_action)
+
+        # 4. Active Profile Submenu
         self.profile_submenu = self.menu.addMenu("Switch Profile")
-        # (Profiles populated dynamically via set_profiles)
 
-        # 4. Volume Submenu
+        # 5. Volume Submenu
         self.volume_submenu = self.menu.addMenu("Master Volume")
         for vol_percent in [100, 85, 70, 50, 25, 0]:
             label = f"{vol_percent}%" if vol_percent > 0 else "Mute (0%)"
@@ -135,37 +179,49 @@ class TrayIconManager(QObject):
             self.volume_actions[vol_percent] = act
             act.triggered.connect(lambda checked=False, vp=vol_percent: self.volume_changed.emit(vp / 100.0))
 
-        # 5. Quick Test Sound
+        # 6. Test Keystroke Sound
         self.test_action = QAction("▶ Test Keystroke Sound", self.menu)
         self.test_action.triggered.connect(self.preview_clicked.emit)
         self.menu.addAction(self.test_action)
 
         self.menu.addSeparator()
 
-        # 6. Open Main Window / Dashboard
-        self.open_action = QAction("Open ClackLab Window...", self.menu)
-        open_font = self.open_action.font()
-        open_font.setBold(True)
-        self.open_action.setFont(open_font)
-        self.open_action.triggered.connect(self.show_dashboard_requested.emit)
-        self.menu.addAction(self.open_action)
+        # 7. Open Settings & Diagnostics
+        self.settings_action = QAction("Settings...", self.menu)
+        self.settings_action.triggered.connect(self.open_settings_requested.emit)
+        self.menu.addAction(self.settings_action)
 
-        # 7. Launch at Login
+        self.diagnostics_action = QAction("Diagnostics & Logs...", self.menu)
+        self.diagnostics_action.triggered.connect(self.open_diagnostics_requested.emit)
+        self.menu.addAction(self.diagnostics_action)
+
+        # 8. Launch at Login
         self.launch_login_action = QAction("Launch at Login", self.menu)
         self.launch_login_action.setCheckable(True)
         self.launch_login_action.setChecked(True)
         self.launch_login_action.toggled.connect(self.launch_at_login_toggled.emit)
         self.menu.addAction(self.launch_login_action)
 
+        # 9. Show in macOS Dock
+        self.dock_action = QAction("Show in macOS Dock", self.menu)
+        self.dock_action.setCheckable(True)
+        self.dock_action.setChecked(False)
+        self.dock_action.toggled.connect(self.dock_icon_toggled.emit)
+        self.menu.addAction(self.dock_action)
+
         self.menu.addSeparator()
 
-        # 8. Quit
-        self.quit_action = QAction("Quit ClackLab", self.menu)
+        # 10. Stop / Start Runtime Action
+        self.runtime_toggle_action = QAction("Stop Background Runtime", self.menu)
+        self.runtime_toggle_action.triggered.connect(self._on_runtime_toggle_clicked)
+        self.menu.addAction(self.runtime_toggle_action)
+
+        # 11. Quit ClackLab Completely
+        self.quit_action = QAction("Quit ClackLab Completely", self.menu)
         self.quit_action.triggered.connect(self.quit_requested.emit)
         self.menu.addAction(self.quit_action)
 
     def set_profiles(self, profiles: List[tuple[str, str]], active_id: str):
-        """Populates the Switch Profile submenu with radio-selectable actions."""
         self.profile_submenu.clear()
         self.profile_actions.clear()
 
@@ -185,27 +241,75 @@ class TrayIconManager(QObject):
 
     def update_volume(self, vol: float):
         percent = int(round(vol * 100))
-        # Find closest match
         closest = min(self.volume_actions.keys(), key=lambda v: abs(v - percent))
         if closest in self.volume_actions:
             self.volume_actions[closest].setChecked(True)
 
-    def update_enabled_state(self, enabled: bool):
-        self.enable_action.blockSignals(True)
-        self.enable_action.setChecked(enabled)
-        self.enable_action.setText("Enabled (Typing Sounds Active)" if enabled else "Muted (Sounds Disabled)")
-        self.enable_action.blockSignals(False)
+    def update_runtime_health(self, health: dict):
+        """Synchronizes tray menu items and icon with the authoritative runtime health."""
+        state = health.get("state", RuntimeState.RUNNING)
+        self.current_state = state
+        self.icon = generate_keyboard_icon(state)
+        self.tray_icon.setIcon(self.icon)
+
+        prof_name = health.get("active_profile_name", "")
+        trusted = health.get("accessibility_trusted", True)
+        is_muted = health.get("is_muted", False)
+
+        # Tooltip
+        tooltip_state = state.value.capitalize()
+        self.tray_icon.setToolTip(f"ClackLab — {tooltip_state} ({prof_name})")
+
+        # Status action text
+        if state == RuntimeState.RUNNING:
+            self.status_action.setText(f"● Status: Running ({prof_name})")
+            self.pause_resume_action.setText("Pause Background Sounds")
+            self.pause_resume_action.setEnabled(True)
+            self.runtime_toggle_action.setText("Stop Background Runtime")
+            self.perm_warning_action.setVisible(False)
+        elif state == RuntimeState.DEGRADED:
+            self.status_action.setText("⚠️ Status: Degraded (Permissions Needed)")
+            self.pause_resume_action.setText("Pause Background Sounds")
+            self.pause_resume_action.setEnabled(True)
+            self.runtime_toggle_action.setText("Stop Background Runtime")
+            self.perm_warning_action.setVisible(True)
+        elif state == RuntimeState.PAUSED:
+            self.status_action.setText("⏸ Status: Paused (Muted)")
+            self.pause_resume_action.setText("Resume Background Sounds")
+            self.pause_resume_action.setEnabled(True)
+            self.runtime_toggle_action.setText("Stop Background Runtime")
+            self.perm_warning_action.setVisible(not trusted)
+        elif state in (RuntimeState.STOPPED, RuntimeState.FAILED):
+            self.status_action.setText(f"⏹ Status: {state.value.capitalize()}")
+            self.pause_resume_action.setEnabled(False)
+            self.runtime_toggle_action.setText("Start Background Runtime")
+            self.perm_warning_action.setVisible(not trusted)
 
     def update_launch_at_login(self, enabled: bool):
         self.launch_login_action.blockSignals(True)
         self.launch_login_action.setChecked(enabled)
         self.launch_login_action.blockSignals(False)
 
-    def update_status(self, engine_active: bool, perm_trusted: bool, active_prof_name: str = ""):
-        eng_txt = "Active" if engine_active else "Stopped"
-        perm_txt = "Trusted" if perm_trusted else "Needs Perm"
-        prof_txt = f" [{active_prof_name}]" if active_prof_name else ""
-        self.status_action.setText(f"● Audio: {eng_txt} | Access: {perm_txt}{prof_txt}")
+    def update_dock_visibility(self, visible: bool):
+        self.dock_action.blockSignals(True)
+        self.dock_action.setChecked(visible)
+        self.dock_action.blockSignals(False)
+
+    def update_enabled_state(self, enabled: bool):
+        self.pause_resume_action.blockSignals(True)
+        self.pause_resume_action.setChecked(enabled)
+        self.pause_resume_action.setText("Pause Background Sounds (Enabled)" if enabled else "Resume Background Sounds (Muted)")
+        self.pause_resume_action.blockSignals(False)
+
+    def _on_pause_resume_clicked(self):
+        is_paused = (self.current_state == RuntimeState.PAUSED)
+        self.pause_resume_toggled.emit(is_paused)
+
+    def _on_runtime_toggle_clicked(self):
+        if self.current_state in (RuntimeState.STOPPED, RuntimeState.FAILED):
+            self.start_runtime_requested.emit()
+        else:
+            self.stop_runtime_requested.emit()
 
     def show(self):
         self.tray_icon.show()
@@ -214,6 +318,5 @@ class TrayIconManager(QObject):
         self.tray_icon.hide()
 
     def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason):
-        # On single left-click, activate/show the main window dashboard
-        if reason == QSystemTrayIcon.Trigger:
+        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.DoubleClick):
             self.show_dashboard_requested.emit()

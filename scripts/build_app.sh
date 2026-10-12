@@ -10,7 +10,8 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 if [ -d ".venv" ]; then
-    source .venv/bin/activate
+    source .venv/bin/activate 2>/dev/null || true
+    export PATH="$PROJECT_ROOT/.venv/bin:$PATH"
 fi
 
 echo "Ensuring sound assets are generated..."
@@ -35,6 +36,7 @@ pyinstaller \
     --hidden-import "numpy" \
     --hidden-import "Quartz" \
     --hidden-import "AppKit" \
+    --hidden-import "ServiceManagement" \
     --hidden-import "PySide6.QtCore" \
     --hidden-import "PySide6.QtGui" \
     --hidden-import "PySide6.QtWidgets" \

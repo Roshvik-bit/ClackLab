@@ -139,15 +139,43 @@ class SoundSettingsView(QWidget):
 
         c_layout.addWidget(beh_group)
 
-        # --- 4. macOS System & Startup Integration ---
-        sys_group = QGroupBox("System & Startup", container)
+        # --- 4. macOS System & Background Operation Integration ---
+        sys_group = QGroupBox("System & Background Operation", container)
         s_layout = QVBoxLayout(sys_group)
         s_layout.setSpacing(10)
+
+        self.cb_run_in_background = QCheckBox("Keep ClackLab Running in Background when Window is Closed", sys_group)
+        self.cb_run_in_background.setChecked(True)
+        self.cb_run_in_background.toggled.connect(lambda c: self.settings_changed.emit({"run_in_background": c}))
+        s_layout.addWidget(self.cb_run_in_background)
+
+        # Command+Q behavior row
+        cmd_q_row = QHBoxLayout()
+        cmd_q_label = QLabel("When Command+Q is Pressed:", sys_group)
+        cmd_q_label.setFixedWidth(200)
+        from PySide6.QtWidgets import QComboBox
+        self.cmd_q_combo = QComboBox(sys_group)
+        self.cmd_q_combo.addItem("Keep running in background (Hide window)", "close_to_tray")
+        self.cmd_q_combo.addItem("Ask what to do", "ask")
+        self.cmd_q_combo.addItem("Quit ClackLab completely", "quit_completely")
+        self.cmd_q_combo.currentIndexChanged.connect(
+            lambda idx: self.settings_changed.emit({"cmd_q_behavior": self.cmd_q_combo.itemData(idx)})
+        )
+        cmd_q_row.addWidget(cmd_q_label)
+        cmd_q_row.addWidget(self.cmd_q_combo)
+        cmd_q_row.addStretch()
+        s_layout.addLayout(cmd_q_row)
 
         self.cb_launch_login = QCheckBox("Launch ClackLab Automatically at macOS Login", sys_group)
         self.cb_launch_login.setChecked(True)
         self.cb_launch_login.toggled.connect(lambda c: self.settings_changed.emit({"launch_at_login": c}))
         s_layout.addWidget(self.cb_launch_login)
+
+        self.cb_show_in_dock = QCheckBox("Show ClackLab Icon in macOS Dock", sys_group)
+        self.cb_show_in_dock.setToolTip("Uncheck to hide ClackLab from the macOS Dock and keep it strictly in the menu bar / taskbar.")
+        self.cb_show_in_dock.setChecked(False)
+        self.cb_show_in_dock.toggled.connect(lambda c: self.settings_changed.emit({"show_in_dock": c}))
+        s_layout.addWidget(self.cb_show_in_dock)
 
         c_layout.addWidget(sys_group)
 
@@ -174,6 +202,11 @@ class SoundSettingsView(QWidget):
         self.cb_repeats.setChecked(settings.play_key_repeats)
         self.cb_visual.setChecked(settings.visual_keyboard_feedback)
         self.cb_launch_login.setChecked(settings.launch_at_login)
+        self.cb_show_in_dock.setChecked(settings.show_in_dock)
+        self.cb_run_in_background.setChecked(settings.run_in_background)
+        idx = self.cmd_q_combo.findData(settings.cmd_q_behavior)
+        if idx >= 0:
+            self.cmd_q_combo.setCurrentIndex(idx)
 
     def _on_slider_changed(self, key: str, val: int, label: QLabel):
         label.setText(f"{val}%")

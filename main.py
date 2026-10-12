@@ -87,6 +87,7 @@ def main():
     parser.add_argument("--profile", type=str, default=None, help="Initial switch profile ID (e.g. tactile, linear, clicky, thocky, creamy, silent)")
     parser.add_argument("--benchmark", action="store_true", help="Run non-GUI audio latency benchmark and exit")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose debug logging")
+    parser.add_argument("--background", "--hidden", dest="background", action="store_true", help="Launch directly into menu bar background without opening main window")
     args = parser.parse_args()
 
     setup_logging(args.verbose)
@@ -100,10 +101,17 @@ def main():
     app.setApplicationName("ClackLab")
     app.setOrganizationName("ClackLab")
 
+    # Enforce Single-Instance Check
+    from app.system.single_instance import SingleInstanceController
+    single_instance = SingleInstanceController()
+    if not single_instance.acquire_lock():
+        print("ClackLab is already active in the background. Signaled running instance to bring window to front.")
+        sys.exit(0)
+
     from app.ui.tray_icon import get_app_icon
     app.setWindowIcon(get_app_icon())
 
-    clack_app = ClackApplication(app)
+    clack_app = ClackApplication(app, single_instance=single_instance, start_minimized=args.background)
     if args.profile:
         clack_app._on_profile_selected(args.profile)
 
