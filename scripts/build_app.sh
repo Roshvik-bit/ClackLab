@@ -44,8 +44,12 @@ pyinstaller \
 echo ""
 if [ -d "dist/ClackLab.app" ]; then
     /usr/libexec/PlistBuddy -c "Add :NSAccessibilityUsageDescription string 'ClackLab plays realistic mechanical keyboard sounds globally across all macOS applications while you type.'" dist/ClackLab.app/Contents/Info.plist 2>/dev/null || true
-    echo "Applying stable codesign designated requirement (identifier com.clacklab.macos)..."
-    codesign --force --deep --sign - --requirements '=designated => identifier "com.clacklab.macos"' dist/ClackLab.app
+    xattr -cr dist/ClackLab.app 2>/dev/null || true
+    echo "Signing nested dynamic libraries and frameworks..."
+    find dist/ClackLab.app/Contents/Frameworks -type f \( -name "*.dylib" -o -name "*.so" \) -exec codesign --force --sign - {} + 2>/dev/null || true
+    find dist/ClackLab.app/Contents/Frameworks -type d -name "*.framework" -exec codesign --force --sign - {} + 2>/dev/null || true
+    echo "Applying designated requirement codesign to ClackLab.app..."
+    codesign --force --deep --sign - dist/ClackLab.app
     echo "============================================================"
     echo "✓ Build successful! ClackLab.app created at:"
     echo "  $PROJECT_ROOT/dist/ClackLab.app"

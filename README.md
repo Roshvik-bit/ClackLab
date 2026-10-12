@@ -27,6 +27,16 @@ Because productivity is important. But sounding like a tiny mechanical orchestra
 | 🍎 **macOS** (Apple Silicon & Intel) | Disk Image (`.dmg`) | [`v1.0.0-macos`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-macos) | [**Download ClackLab for macOS (.dmg)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-macos/ClackLab-v1.0.0-macOS.dmg) |
 | 🪟 **Windows** (10 / 11 64-bit) | Executable (`.exe`) | [`v1.0.0-windows`](https://github.com/Roshvik-bit/ClackLab/releases/tag/v1.0.0-windows) | [**Download ClackLab for Windows (.exe)**](https://github.com/Roshvik-bit/ClackLab/releases/download/v1.0.0-windows/ClackLab-v1.0.0-Windows.exe) |
 
+> **💡 macOS Gatekeeper Tip**: When downloading open-source applications via Chrome or Safari on macOS (Sequoia / Sonoma), Gatekeeper may show *"ClackLab is damaged and can't be opened"*. This is simply macOS's browser quarantine flag.
+> 
+> **How to open:**
+> 1. Drag **ClackLab** from the DMG into your **Applications** folder.
+> 2. Open Terminal and run:
+>    ```bash
+>    xattr -cr /Applications/ClackLab.app
+>    ```
+>    *(Or open **System Settings > Privacy & Security**, scroll down to **Security**, and click **Open Anyway**).*
+
 ---
 
 ## 🛠️ Highlights & Core Features
