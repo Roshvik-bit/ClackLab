@@ -1,0 +1,37 @@
+{
+  "id": "tactile",
+  "name": "Holy Panda (Tactile)",
+  "description": "Distinct tactile bump with full-bodied mechanical clack and snappy return.",
+  "version": "1.0.0",
+  "author": "Mechvibes Community / ClackLab",
+  "license": "MIT",
+  "sample_rate": 48000,
+  "channels": 2,
+  "down_samples": [
+    "down_1.wav",
+    "down_2.wav",
+    "down_3.wav",
+    "down_4.wav",
+    "down_5.wav"
+  ],
+  "up_samples": [
+    "up_1.wav"
+  ],
+  "special_keys": {
+    "space": {
+      "down": "space_down.wav",
+      "up": "space_up.wav"
+    },
+    "enter": {
+      "down": "enter_down.wav",
+      "up": "enter_up.wav"
+    },
+    "backspace": {
+      "down": "backspace_down.wav",
+      "up": "backspace_up.wav"
+    }
+  },
+  "gain": 1.0,
+  "press_gain": 1.0,
+  "release_gain": 0.75
+}
