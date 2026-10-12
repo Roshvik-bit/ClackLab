@@ -20,7 +20,7 @@ pyinstaller ^
     --windowed ^
     --clean ^
     --noconfirm ^
-    --icon "assets\icon_keyboard.png" ^
+    --icon "assets\icon.ico" ^
     --add-data "assets;assets" ^
     --hidden-import "sounddevice" ^
     --hidden-import "soundfile" ^

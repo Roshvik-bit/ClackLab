@@ -9,12 +9,9 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_ROOT"
 
-if [ ! -d ".venv" ]; then
-    echo "Virtual environment .venv not found. Run ./scripts/run_dev.sh first."
-    exit 1
+if [ -d ".venv" ]; then
+    source .venv/bin/activate
 fi
-
-source .venv/bin/activate
 
 echo "Ensuring sound assets are generated..."
 if [ ! -f "assets/sounds/manifest.json" ]; then
