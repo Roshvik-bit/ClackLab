@@ -32,5 +32,19 @@ htmlcov/
 *.swp
 *.swo
 
+# Secrets, Environment Variables & API Keys
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+*credential*
+*secret*
+*token*
+*.local
+auth.json
+
 # Logs
 *.log

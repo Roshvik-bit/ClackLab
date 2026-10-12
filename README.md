@@ -180,7 +180,7 @@ Example measured performance on macOS Apple Silicon:
 CLACKLAB CLI BENCHMARK & AUDIO ENGINE TEST
 ============================================================
 macOS Accessibility Trusted: True
-Default Output Device: MacBook Pro Speakers
+Default Output Device: System Default Audio Output
 Discovered 6 switch profiles: ['creamy', 'tactile', 'thocky', 'linear', 'silent', 'clicky']
 Testing Switch Profile: Boba U4T (Thocky) (thocky)
 Audio engine started: SR=48000Hz, BlockSize=128 (2.67ms latency)
